@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>锦绣中华 · 盛世河山</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- ECharts -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&family=Zhi+Mang+Xing&display=swap"
+        rel="stylesheet">
+
+    <!-- Custom Styles -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #fdfbf5;
+            /* Rice paper color */
+            overflow: hidden;
+            font-family: 'Noto Serif SC', serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Vertical Text Utility */
+        .writing-vertical-rl {
+            writing-mode: vertical-rl;
+            -webkit-writing-mode: vertical-rl;
+            text-orientation: upright;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #b91c1c;
+            border-radius: 3px;
+        }
+
+        /* Animations */
+        @keyframes fade-in-up {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in-up {
+            animation: fade-in-up 0.5s ease-out forwards;
+        }
+
+        @keyframes spin-slow {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .animate-spin-slow {
+            animation: spin-slow 8s linear infinite;
+        }
+
+        /* Gate Animation Classes */
+        .gate-panel {
+            transition: transform 2.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .gate-open-left {
+            transform: translateX(-100%);
+        }
+
+        .gate-open-right {
+            transform: translateX(100%);
+        }
+
+        /* Cursor */
+        .cursor-blink {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* Intro Overlay Pointer Events */
+        #intro-gate.pointer-events-none {
+            pointer-events: none;
+        }
+
+        #intro-gate {
+            pointer-events: auto;
+        }
+    </style>
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "echarts": "https://aistudiocdn.com/echarts@^6.0.0"
+  }
+}
+</script>
+</head>
+
+<body>
+
+    <!-- 1. Intro Gate Animation -->
+    <div id="intro-gate" class="fixed inset-0 z-50 flex overflow-hidden">
+        <!-- Left Gate -->
+        <div id="gate-left"
+            class="gate-panel w-1/2 h-full bg-red-900 border-r-4 border-amber-500/50 relative shadow-2xl z-10 flex items-center justify-end pr-10 md:pr-20">
+            <div class="flex flex-col items-center gap-4 opacity-90">
+                <div class="w-1 h-24 md:h-32 bg-amber-500/30 rounded-full"></div>
+                <span
+                    class="text-6xl md:text-8xl font-[Ma+Shan+Zheng] text-amber-400 writing-vertical-rl drop-shadow-lg">锦绣</span>
+                <div class="w-1 h-24 md:h-32 bg-amber-500/30 rounded-full"></div>
+            </div>
+            <!-- Background Pattern (CSS SVG) -->
+            <div class="absolute inset-0 opacity-10 pointer-events-none"
+                style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23fbbf24\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
+            </div>
+        </div>
+
+        <!-- Right Gate -->
+        <div id="gate-right"
+            class="gate-panel w-1/2 h-full bg-red-900 border-l-4 border-amber-500/50 relative shadow-2xl z-10 flex items-center justify-start pl-10 md:pl-20">
+            <div class="flex flex-col items-center gap-4 opacity-90">
+                <div class="w-1 h-24 md:h-32 bg-amber-500/30 rounded-full"></div>
+                <span
+                    class="text-6xl md:text-8xl font-[Ma+Shan+Zheng] text-amber-400 writing-vertical-rl drop-shadow-lg">中华</span>
+                <div class="w-1 h-24 md:h-32 bg-amber-500/30 rounded-full"></div>
+            </div>
+            <!-- Background Pattern -->
+            <div class="absolute inset-0 opacity-10 pointer-events-none"
+                style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23fbbf24\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
+            </div>
+        </div>
+
+        <!-- Center Seal -->
+        <div id="gate-seal"
+            class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 transition-opacity duration-1000">
+            <div
+                class="w-32 h-32 md:w-48 md:h-48 rounded-full border-4 border-amber-500 bg-red-800 shadow-[0_0_50px_rgba(251,191,36,0.6)] flex items-center justify-center">
+                <span class="text-4xl md:text-6xl font-[Zhi+Mang+Xing] text-amber-100">盛世</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Main App Container -->
+    <div id="app-container" class="w-full h-screen relative opacity-0 transition-opacity duration-1000">
+
+        <!-- Background Texture -->
+        <div class="absolute inset-0 pointer-events-none opacity-10 z-0"
+            style="background-image: url('data:image/svg+xml,%3Csvg width=\'200\' height=\'200\' viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' opacity=\'0.4\'/%3E%3C/svg%3E')">
+        </div>
+
+        <!-- Mouse Trail Canvas -->
+        <canvas id="trail-canvas" class="fixed top-0 left-0 pointer-events-none z-50"></canvas>
+
+        <!-- Top Right: Audio Controls -->
+        <div class="absolute top-6 right-6 z-40 flex items-center gap-3">
+            <div id="music-title"
+                class="hidden md:block text-amber-800/70 text-sm font-[Ma+Shan+Zheng] tracking-widest opacity-0 transition-opacity duration-500">
+                正在播放: 茉莉花
+            </div>
+            <button id="music-toggle"
+                class="w-10 h-10 rounded-full border-2 border-gray-400 bg-gray-200/50 text-gray-500 flex items-center justify-center shadow-lg hover:bg-white transition-all duration-300">
+                <!-- Icons injected by JS -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Top Left: Back Button (Hidden Initially) -->
+        <button id="back-btn"
+            class="absolute top-6 left-6 z-40 bg-red-900/90 text-amber-50 px-6 py-2 rounded shadow-xl border-2 border-amber-500/50 hover:bg-red-800 hover:scale-105 transition-all duration-300 flex items-center gap-2 hidden group">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:-translate-x-1 transition-transform"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span class="font-[Noto+Serif+SC] font-bold tracking-wide">返回全国</span>
+        </button>
+
+        <!-- Map Container -->
+        <div id="map-chart" class="w-full h-full z-10 relative"></div>
+
+        <!-- Decorative Stamp (Bottom Left) -->
+        <div id="decor-stamp"
+            class="absolute bottom-12 left-8 z-20 opacity-90 pointer-events-none hidden md:block transition-opacity duration-500">
+            <div
+                class="w-32 h-32 border-4 border-red-900 bg-red-800/90 rounded-md flex items-center justify-center rotate-6 shadow-lg">
+                <span
+                    class="text-amber-100 font-[Zhi+Mang+Xing] text-4xl writing-vertical-rl leading-relaxed tracking-widest">锦绣<br />河山</span>
+            </div>
+        </div>
+
+        <!-- Info Panel (Right Side Slide-in) -->
+        <div id="info-panel"
+            class="fixed inset-0 z-30 flex items-center justify-center md:justify-end md:pr-10 pointer-events-none hidden">
+            <div
+                class="bg-white/75 backdrop-blur-2xl border border-white/60 shadow-2xl shadow-red-900/10 rounded-xl p-6 max-w-md w-full pointer-events-auto overflow-hidden flex flex-col max-h-[85vh] transition-all duration-300 animate-fade-in-up">
+
+                <!-- Panel Header -->
+                <div class="flex justify-between items-start mb-4 border-b border-amber-200/50 pb-2">
+                    <div>
+                        <h2 id="panel-title"
+                            class="text-4xl font-bold text-red-900 font-[Ma+Shan+Zheng] tracking-widest drop-shadow-sm">
+                        </h2>
+                        <div class="flex items-center gap-2 mt-2">
+                            <span id="panel-abbr"
+                                class="text-sm font-serif text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded shadow-sm"></span>
+                            <span id="panel-capital" class="text-sm font-serif text-gray-700"></span>
+                        </div>
+                    </div>
+                    <button id="close-panel-btn"
+                        class="text-gray-400 hover:text-red-600 transition-colors p-1 hover:bg-white/50 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Poem Section -->
+                <div id="panel-poem-container"
+                    class="mb-4 p-3 bg-red-50/50 border-l-4 border-red-800 rounded-r shadow-sm">
+                    <p id="panel-poem" class="text-lg font-[Zhi+Mang+Xing] text-red-800 text-center leading-relaxed">
+                    </p>
+                </div>
+
+                <!-- Label -->
+                <div class="flex gap-2 mb-4">
+                    <div
+                        class="flex-1 py-1.5 px-2 text-xs md:text-sm rounded shadow-md font-serif bg-red-800 text-amber-50 text-center">
+                        人文概览
+                    </div>
+                </div>
+
+                <!-- Content with Typewriter -->
+                <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                    <div id="panel-content"
+                        class="text-gray-900 font-serif leading-relaxed text-justify drop-shadow-sm text-base"></div>
+                    <span class="cursor-blink text-amber-600 font-bold">|</span>
+                </div>
+
+                <!-- Decor Line -->
+                <div class="mt-4 text-center">
+                    <div class="h-1 w-20 bg-amber-500 mx-auto rounded-full opacity-30"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="absolute bottom-2 right-4 text-stone-400 text-xs z-20 font-sans">
+            <p>© 2025 锦绣中华 | Static Version</p>
+        </div>
+    </div>
+
+    <!-- --- JAVASCRIPT LOGIC --- -->
+    <script>
+        /* ================= DATA CONSTANTS ================= */
+        const PROVINCE_DATA = {
+            "北京市": { name: "北京市", abbr: "京", capital: "北京", poem: "一下雪，北京就成了北平。", description: "【帝都风华·千年文脉】\n北京市，中华人民共和国首都，位于华北平原北部，背靠燕山，襟带河海，是中国的政治中心、文化中心、国际交往中心和科技创新中心。它是首批国家历史文化名城，拥有三千余年建城史和八百五十余年建都史。\n\n自古以来，北京便是“龙兴之地”。从辽金的陪都，到元明清的帝都，这里见证了中华民族的兴衰荣辱。紫禁城（故宫）作为世界上现存规模最大、保存最为完整的木质结构古建筑群，诉说着皇家威仪；长城蜿蜒于崇山峻岭之间，镌刻着中华民族不屈的脊梁。\n\n北京的自然与人文景观交相辉映。颐和园的湖光山色体现了“虽由人作，宛自天开”的造园艺术；天坛的苍松翠柏回荡着古人对天地的敬畏。漫步胡同，听鸽哨声声，看四合院里的枣树光影，能感受到最地道的京味儿。\n\n饮食文化上，北京烤鸭色泽红润、肥而不腻，是享誉世界的美味；豆汁儿、焦圈、炸酱面则藏着老北京人的市井情怀。北京人的性格里，既有皇城根下的局气与厚道，又有新时代的大气与包容。" },
+            "湖南省": { name: "湖南省", abbr: "湘", capital: "长沙", poem: "独立寒秋，湘江北去，橘子洲头。", description: "【惟楚有材·锦绣潇湘】\n湖南省，地处中国中部、长江中游，因大部分区域处于洞庭湖以南而得名“湖南”，因湘江贯穿全境而简称“湘”。这里东临江西，西接重庆、贵州，南毗广东、广西，北连湖北，是华夏文明的重要发祥地之一。\n\n“惟楚有材，于斯为盛”。湖南历史底蕴深厚，岳麓书院千年弦歌不绝，朱张会讲传为佳话。近代以来，这里更是英雄辈出，孕育了毛泽东、刘少奇、任弼时等一大批无产阶级革命家，以及曾国藩、左宗棠等晚清名臣。这片红色的土地，流淌着“吃得苦、霸得蛮、耐得烦”的湖湘精神。\n\n三湘四水，风景独秀。张家界的三千奇峰直插云霄，宛如水墨画卷，被誉为“缩小的仙境，放大的盆景”；南岳衡山独秀五岳，祝融峰之高、藏经殿之秀令人神往；洞庭湖波澜壮阔，“衔远山，吞长江”，范仲淹笔下的忧乐情怀在此激荡。\n\n湘菜作为中国八大菜系之一，以“酸辣鲜香”著称。剁椒鱼头色泽红亮，口味浓郁；长沙臭豆腐闻起来臭、吃起来香，外焦里嫩。湖南人火辣的性格，正如这碗中红彤彤的辣椒，热情、直爽、敢为人先。" },
+            "四川省": { name: "四川省", abbr: "川", capital: "成都", poem: "九天开出一成都，万户千门入画图。", description: "【天府之国·巴蜀画卷】\n四川省，位于中国西南腹地，长江上游，素有“天府之国”的美誉。其地形地貌极其复杂多样，西高东低，从雪域高原到盆地丘陵，造就了这里独特的地理奇观。\n\n古蜀文明神秘璀璨，三星堆遗址出土的青铜神树、金面具震惊世界，证明了中华文明的多元一体。李白叹“蜀道之难，难于上青天”，杜甫吟“窗含西岭千秋雪”，无数文人墨客在此留下了千古绝唱。武侯祠、杜甫草堂、乐山大佛，无不诉说着巴蜀大地的历史沧桑。\n\n四川的自然风光美不胜收。九寨沟的水，“童话世界”般梦幻；黄龙的池，“人间瑶池”般绚丽；稻城亚丁被誉为“水蓝色星球上的最后一片净土”。这里还是国宝大熊猫的故乡，憨态可掬的滚滚们向世界传递着和平与友爱。\n\n川菜位居四大菜系之首，取材广泛，调味多变，以“麻辣鲜香”征服了全球食客的味蕾。火锅的热辣翻滚，麻婆豆腐的麻辣烫嫩，回锅肉的肥而不腻，每一口都是生活的滋味。四川人的生活态度闲适安逸，一盏盖碗茶，一把竹椅，摆起龙门阵，便是人间好时节。" },
+            "新疆维吾尔自治区": { name: "新疆维吾尔自治区", abbr: "新", capital: "乌鲁木齐", poem: "明月出天山，苍茫云海间。", description: "【大美西域·丝路明珠】\n新疆维吾尔自治区，位于中国西北边陲，是中国陆地面积最大的省级行政区。这里“三山夹两盆”，天山山脉横亘中部，将新疆分为南疆和北疆，冰川雪岭与戈壁瀚海共生，造就了壮丽的自然奇观。\n\n自汉代张骞凿空西域以来，这里便是丝绸之路的咽喉要道，东西方文明在此交汇融合。楼兰古国的神秘消逝、交河故城的断壁残垣、克孜尔千佛洞的精美壁画，见证了历史的厚重。玄奘西行途经此地，留下了传颂千年的故事。\n\n新疆的风光，大气磅礴。天山天池碧水如镜，倒映着博格达峰的皑皑白雪；喀纳斯湖神秘莫测，变色湖水令人迷醉；塔克拉玛干沙漠浩瀚无垠，胡杨林“生而一千年不死，死而一千年不倒，倒而一千年不朽”，诠释着生命的顽强。\n\n这里是“瓜果之乡”，吐鲁番的葡萄、哈密的瓜、库尔勒的香梨甜透心扉。这里也是“歌舞之乡”，维吾尔族的十二木卡姆荡气回肠，各民族兄弟姐妹能歌善舞，热情好客。烤全羊、大盘鸡、手抓饭，更是让人垂涎欲滴的美食盛宴。" },
+            "台湾省": { name: "台湾省", abbr: "台", capital: "台北", poem: "乡愁是一湾浅浅的海峡。", description: "【宝岛明珠·血脉相连】\n台湾省，位于中国东南沿海，东临太平洋，西隔台湾海峡与福建省相望，是中国第一大岛。这里扼西太平洋航道中心，是中国与太平洋地区各国海上联系的交通枢纽，战略地位十分重要，素有“宝岛”之称。\n\n台湾自古以来就是中国领土不可分割的一部分。从郑成功收复台湾，到刘铭传建设台湾，中华民族的血脉在此生生不息。闽南文化、客家文化与原住民文化在此交融，妈祖庙香火鼎盛，体现了深厚的中华文化认同。\n\n岛内自然资源丰富，森林茂密，物产丰饶。日月潭水波光潋滟，宛如双璧；阿里山云海茫茫，神木参天，小火车穿梭林间，充满诗情画意；太鲁阁峡谷鬼斧神工，令人惊叹大自然的造化神奇。垦丁的碧海蓝天，更是热带风情的极致展现。\n\n台湾美食闻名遐迩，融合了闽菜、粤菜及各地风味。台北夜市熙熙攘攘，蚵仔煎、卤肉饭、珍珠奶茶、凤梨酥，不仅是味觉的享受，更是浓浓的人情味。台湾同胞温文尔雅，热情好客，两岸同根同源，骨肉相连，期盼团圆。" },
+            "天津市": { name: "天津市", abbr: "津", capital: "天津", poem: "九河下梢天津卫，三道浮桥两道关。", description: "九河下梢天津卫，三道浮桥两道关。天津不仅是北方的航运中心，更是中西文化碰撞的前沿。五大道的小洋楼博览万国建筑，古文化街的泥人张、杨柳青年画传承民间技艺。狗不理包子、煎饼果子，满载着津门特有的烟火气与幽默感。" },
+            "河北省": { name: "河北省", abbr: "冀", capital: "石家庄", poem: "风萧萧兮易水寒，壮士一去兮不复还。", description: "燕赵多慷慨悲歌之士。河北环抱京津，承德避暑山庄曾是清朝的夏都，展现皇家园林的宏大；白洋淀荷花映日，不仅是华北明珠，更是雄安新区的生态底色。这里驴肉火烧香脆可口，长城精华段金山岭更显沧桑壮美。" },
+            "山西省": { name: "山西省", abbr: "晋", capital: "太原", poem: "借问酒家何处有，牧童遥指杏花村。", description: "五千年文明看山西。这里是华夏文明的摇篮，黄河壶口瀑布奔腾咆哮，象征民族精神。平遥古城保存完好，晋商大院诉说着昔日汇通天下的辉煌。云冈石窟大佛宝相庄严，刀削面劲道爽滑，老陈醋醇厚绵长。" },
+            "内蒙古自治区": { name: "内蒙古自治区", abbr: "蒙", capital: "呼和浩特", poem: "天苍苍，野茫茫，风吹草低见牛羊。", description: "天苍苍，野茫茫，风吹草低见牛羊。内蒙古横跨东北、华北、西北，拥有呼伦贝尔大草原的辽阔与巴丹吉林沙漠的雄浑。成吉思汗陵长明灯不灭，那达慕大会骑射摔跤热血沸腾。手把肉、马奶酒，尽显马背民族的豪情。" },
+            "辽宁省": { name: "辽宁省", abbr: "辽", capital: "沈阳", poem: "山海关前无故人，辽东塞北有雄兵。", description: "共和国长子，工业摇篮。沈阳故宫见证了满清入关前的历史，大连金石滩海誓山盟。辽宁不仅有钢铁的硬朗，更有红海滩的柔美。猪肉炖粉条、老边饺子，热气腾腾中透着东北人的热情与实诚。" },
+            "吉林省": { name: "吉林省", abbr: "吉", capital: "长春", poem: "长白山前知世郎，纯着红罗绵背裆。", description: "白山松水，冰雪奇缘。长白山天池神秘莫测，是满族的发祥地。雾凇岛玉树琼花，宛如仙境。长春不仅是电影之都、汽车之城，更有着伪满皇宫的历史警示。朝鲜族冷面、打糕，风味独特，延边风情令人流连。" },
+            "黑龙江省": { name: "黑龙江省", abbr: "黑", capital: "哈尔滨", poem: "我的家在东北松花江上。", description: "北国风光，千里冰封。黑龙江是中国最北端，哈尔滨素有“东方莫斯科”之称，中央大街欧式建筑林立，冰雪大世界流光溢彩。大兴安岭林海雪原，丹顶鹤故乡扎龙湿地。锅包肉酸甜酥脆，铁锅炖大鹅香气扑鼻。" },
+            "上海市": { name: "上海市", abbr: "沪", capital: "上海", poem: "夜上海，夜上海，你是个不夜城。", description: "海纳百川，追求卓越。这里是长江入海口，东方明珠与外滩万国建筑群隔江相望，见证了近代百年的沧桑与现代的辉煌。豫园九曲桥古韵犹存，陆家嘴摩天楼直插云霄。本帮菜浓油赤酱，生煎馒头底酥皮薄，尽显精致与摩登。" },
+            "江苏省": { name: "江苏省", abbr: "苏", capital: "南京", poem: "烟花三月下扬州。", description: "江南佳丽地，金陵帝王州。南京六朝古都，秦淮河畔桨声灯影；苏州园林甲天下，小桥流水人家。昆曲水磨腔婉转悦耳，苏绣针法精细绝伦。松鼠桂鱼、盐水鸭，淮扬菜系刀工精湛，口味清淡鲜美。" },
+            "浙江省": { name: "浙江省", abbr: "浙", capital: "杭州", poem: "欲把西湖比西子，淡妆浓抹总相宜。", description: "欲把西湖比西子，淡妆浓抹总相宜。杭州不仅有西湖的柔美，更有钱塘江大潮的壮阔。良渚古城实证中华五千年文明，乌镇西塘水乡梦回。浙商精神勇立潮头，龙井茶香飘四海，东坡肉肥而不腻，杭帮菜清爽别致。" },
+            "安徽省": { name: "安徽省", abbr: "皖", capital: "合肥", poem: "一生痴绝处，无梦到徽州。", description: "一生痴绝处，无梦到徽州。黄山归来不看岳，奇松怪石云海温泉堪称四绝。宏村西递粉墙黛瓦，徽派建筑意境深远。这里是文房四宝之乡，宣纸徽墨传承千年。臭鳜鱼闻臭吃香，毛豆腐风味独特，徽菜重油重色，回味无穷。" },
+            "福建省": { name: "福建省", abbr: "闽", capital: "福州", poem: "海滨邹鲁，文风鼎盛。", description: "八山一水一分田。福建依山傍海，武夷山九曲溪清幽秀丽，大红袍茶香四溢。福建土楼造型奇特，是聚族而居的建筑典范。鼓浪屿琴声悠扬，海上丝绸之路起点泉州古迹遍布。佛跳墙汇聚山海珍馐，沙县小吃遍布全国。" },
+            "江西省": { name: "江西省", abbr: "赣", capital: "南昌", poem: "落霞与孤鹜齐飞，秋水共长天一色。", description: "落霞与孤鹜齐飞，秋水共长天一色。滕王阁临江伫立，千古文章传颂。景德镇千年瓷都，白如玉、明如镜、薄如纸、声如磬。井冈山星星之火可以燎原，是红色革命摇篮。瓦罐汤鲜香滋补，鄱阳湖大闸蟹肥美流油。" },
+            "山东省": { name: "山东省", abbr: "鲁", capital: "济南", poem: "会当凌绝顶，一览众山小。", description: "孔孟之乡，礼仪之邦。泰山五岳独尊，登顶可览众山小；黄河入海口，蓝黄交汇壮丽奇观。曲阜三孔儒家文化源远流长，趵突泉三股水喷涌不息。鲁菜作为宫廷菜代表，九转大肠、糖醋鲤鱼技法精湛，煎饼卷大葱则是豪爽的民间风味。" },
+            "河南省": { name: "河南省", abbr: "豫", capital: "郑州", poem: "得中原者得天下。", description: "一部河南史，半部中国史。这里是中原腹地，九州之中。洛阳龙门石窟佛像万千，开封清明上河园梦回大宋。嵩山少林寺功夫天下闻名，殷墟甲骨文破解文明密码。烩面汤浓肉烂，胡辣汤辛辣开胃，中原文化博大精深。" },
+            "湖北省": { name: "湖北省", abbr: "鄂", capital: "武汉", poem: "昔人已乘黄鹤去，此地空余黄鹤楼。", description: "昔人已乘黄鹤去，此地空余黄鹤楼。湖北是千湖之省，长江汉水在武汉交汇。三峡大坝截断巫山云雨，神农架探寻野人传说。武当山道教圣地，太极拳刚柔并济。热干面芝麻酱香浓郁，清蒸武昌鱼鲜嫩爽滑，荆楚文化浪漫瑰丽。" },
+            "广东省": { name: "广东省", abbr: "粤", capital: "广州", poem: "日啖荔枝三百颗，不辞长作岭南人。", description: "敢为天下先。广东是改革开放的前沿，大湾区核心。广州小蛮腰屹立珠江，深圳从渔村变身科技之都。岭南醒狮威武雄壮，粤剧婉转悠扬。粤菜注重质和味，白切鸡皮爽肉滑，早茶点心琳琅满目，食在广州名不虚传。" },
+            "广西壮族自治区": { name: "广西壮族自治区", abbr: "桂", capital: "南宁", poem: "桂林山水甲天下。", description: "桂林山水甲天下，阳朔山水甲桂林。漓江百里画廊，象鼻山栩栩如生。这里是壮乡歌海，刘三姐歌声传遍四方。龙脊梯田层层叠叠，德天瀑布跨越国界。螺蛳粉酸辣鲜爽，桂林米粉卤水飘香，民族风情多姿多彩。" },
+            "海南省": { name: "海南省", abbr: "琼", capital: "海口", poem: "请到天涯海角来。", description: "请到天涯海角来。海南是中国最大的经济特区，热带度假天堂。三亚亚龙湾沙白水蓝，五指山云雾缭绕。博鳌亚洲论坛连接世界，文昌航天城逐梦星空。文昌鸡皮薄骨酥，清补凉消暑解渴，椰风海韵令人沉醉。" },
+            "重庆市": { name: "重庆市", abbr: "渝", capital: "重庆", poem: "曾经沧海难为水，除却巫山不是云。", description: "朝辞白帝彩云间。重庆是山城、雾都、桥都。洪崖洞夜景梦幻如《千与千寻》，轻轨穿楼而过魔幻现实。长江三峡起于此，大足石刻精美绝伦。九宫格火锅辣得过瘾，重庆小面麻辣鲜香，巴渝人民豪爽耿直，码头文化独具一格。" },
+            "贵州省": { name: "贵州省", abbr: "黔", capital: "贵阳", poem: "五百年后看，云贵胜江南。", description: "雄奇险秀，多彩贵州。黄果树瀑布气势磅礴，荔波小七孔碧水如玉。西江千户苗寨吊脚楼层叠，梵净山蘑菇石鬼斧神工。遵义会议转折之城，中国天眼探索宇宙。酸汤鱼酸辣开胃，茅台酒酱香浓郁，地无三里平造就了独特的山地文明。" },
+            "云南省": { name: "云南省", abbr: "滇", capital: "昆明", poem: "天气常如二三月，花枝不断四时春。", description: "彩云之南，心之向往。大理苍山洱海风花雪月，丽江古城小桥流水。香格里拉是心中的日月，西双版纳热带雨林大象漫步。这里有25个少数民族，泼水节、火把节热闹非凡。过桥米线汤鲜味美，鲜花饼香甜可口，生物多样性王国实至名归。" },
+            "西藏自治区": { name: "西藏自治区", abbr: "藏", capital: "拉萨", poem: "那一世，转山转水转佛塔。", description: "世界屋脊，天上西藏。布达拉宫红白相间，是雪域高原的象征。珠穆朗玛峰世界之巅，纳木错圣湖纯净无瑕。雅鲁藏布大峡谷地球最深，朝圣者磕长头信仰虔诚。酥油茶咸香御寒，青稞酒甘甜醇厚，这里是离天堂最近的地方。" },
+            "陕西省": { name: "陕西省", abbr: "陕", capital: "西安", poem: "冲天香阵透长安，满城尽带黄金甲。", description: "八百里秦川尘土飞扬，三千万老陕齐吼秦腔。西安是十三朝古都，兵马俑千人千面，大雁塔玄奘译经。大唐不夜城流光溢彩，黄土高原信天游高亢。肉夹馍馍酥肉香，羊肉泡馍回味无穷，这里沉淀了中华民族最厚重的历史。" },
+            "甘肃省": { name: "甘肃省", abbr: "甘", capital: "兰州", poem: "羌笛何须怨杨柳，春风不度玉门关。", description: "大漠孤烟直，长河落日圆。河西走廊连接欧亚，敦煌莫高窟飞天曼妙，月牙泉千年不干。嘉峪关天下第一雄关，七彩丹霞如上帝打翻的调色盘。兰州拉面一清二白三红四绿五黄，手抓羊肉肥而不膻，丝路文化的璀璨明珠。" },
+            "青海省": { name: "青海省", abbr: "青", capital: "西宁", poem: "青海长云暗雪山，孤城遥望玉门关。", description: "中华水塔，三江之源。长江、黄河、澜沧江发源于此。青海湖碧波万顷，油菜花海金黄灿烂。茶卡盐湖天空之镜，塔尔寺酥油花栩栩如生。可可西里藏羚羊奔跑，高原精灵守护着这片净土。手抓羊肉、酿皮，风味淳朴。" },
+            "宁夏回族自治区": { name: "宁夏回族自治区", abbr: "宁", capital: "银川", poem: "贺兰山下果园成，塞北江南旧有名。", description: "贺兰山下果园成片，塞上江南旧有名。西夏王陵神秘沧桑，沙坡头沙水相依，大漠与黄河在此握手。沙湖芦苇荡漾，鸟类天堂。宁夏枸杞红遍天下，滩羊肉质细嫩。回乡风情浓郁，八宝茶香甜可口，是由于黄河灌溉而富饶的绿洲。" },
+            "香港特别行政区": { name: "香港特别行政区", abbr: "港", capital: "香港", poem: "小河弯弯向南流，流到香江去看一看。", description: "东方之珠，风采浪漫依然。维多利亚港夜景璀璨，太平山顶俯瞰繁华。中环高楼林立，铜锣湾购物天堂。叮叮车穿梭怀旧，茶餐厅丝袜奶茶顺滑。这里是中西文化交融的窗口，国际金融中心，法治与自由并重，活力无限。" },
+            "澳门特别行政区": { name: "澳门特别行政区", abbr: "澳", capital: "澳门", poem: "你可知Macau不是我真名。", description: "莲花宝地，盛世濠江。大三巴牌坊见证历史变迁，妈阁庙香火缭绕。威尼斯人度假村金碧辉煌，葡式蛋挞奶香浓郁。澳门历史城区是世界文化遗产，中西建筑相映成趣。这里是世界旅游休闲中心，小而美，美而精，多元文化和谐共存。" }
+        };
+
+        /* ================= STATE ================= */
+        let selectedProvince = null;
+        let chartInstance = null;
+        let geoJsonData = null;
+        let geoCenters = {};
+        let typingInterval = null;
+        let musicPlaying = false;
+        const bgmAudio = new Audio("https://music.163.com/song/media/outer/url?id=139774.mp3");
+        bgmAudio.loop = true;
+        bgmAudio.volume = 0.2;
+
+        /* ================= INITIALIZATION ================= */
+        window.addEventListener('DOMContentLoaded', () => {
+            initIntro();
+            initMap();
+            initMouseTrail();
+            setupAudio();
+        });
+
+        /* ================= INTRO ANIMATION ================= */
+        function initIntro() {
+            const gateLeft = document.getElementById('gate-left');
+            const gateRight = document.getElementById('gate-right');
+            const gateSeal = document.getElementById('gate-seal');
+            const introContainer = document.getElementById('intro-gate');
+            const appContainer = document.getElementById('app-container');
+            const decorStamp = document.getElementById('decor-stamp');
+
+            setTimeout(() => {
+                // Open gates
+                gateLeft.classList.add('gate-open-left');
+                gateRight.classList.add('gate-open-right');
+                gateSeal.style.opacity = '0';
+
+                // Show app
+                appContainer.style.opacity = '1';
+                decorStamp.classList.remove('hidden');
+
+                // Cleanup
+                setTimeout(() => {
+                    introContainer.style.display = 'none';
+                    // Try autoplay music gently
+                    bgmAudio.play().then(() => {
+                        musicPlaying = true;
+                        updateMusicIcon();
+                        document.getElementById('music-title').style.opacity = '1';
+                    }).catch(() => {
+                        // Autoplay blocked
+                    });
+                }, 2500);
+            }, 800);
+        }
+
+        /* ================= AUDIO ================= */
+        function setupAudio() {
+            const btn = document.getElementById('music-toggle');
+            btn.addEventListener('click', () => {
+                if (musicPlaying) {
+                    bgmAudio.pause();
+                    musicPlaying = false;
+                    document.getElementById('music-title').style.opacity = '0';
+                } else {
+                    bgmAudio.play();
+                    musicPlaying = true;
+                    document.getElementById('music-title').style.opacity = '1';
+                }
+                updateMusicIcon();
+            });
+        }
+
+        function updateMusicIcon() {
+            const btn = document.getElementById('music-toggle');
+            if (musicPlaying) {
+                btn.classList.add('bg-amber-100', 'border-amber-600', 'text-amber-800', 'animate-spin-slow');
+                btn.classList.remove('bg-gray-200/50', 'text-gray-500');
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>';
+            } else {
+                btn.classList.remove('bg-amber-100', 'border-amber-600', 'text-amber-800', 'animate-spin-slow');
+                btn.classList.add('bg-gray-200/50', 'text-gray-500');
+                btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>';
+            }
+        }
+
+        /* ================= MAP LOGIC ================= */
+        function initMap() {
+            const chartDom = document.getElementById('map-chart');
+            chartInstance = echarts.init(chartDom);
+
+            chartInstance.showLoading({
+                text: '锦绣山河加载中...',
+                color: '#b45309',
+                textColor: '#78350f',
+                maskColor: 'rgba(253, 251, 245, 0.8)',
+                zlevel: 0,
+            });
+
+            // Fallback Logic: Local -> CDN
+            const fetchMap = async () => {
+                try {
+                    const res = await fetch('./china.json');
+                    if (!res.ok) throw new Error("Local fail");
+                    return await res.json();
+                } catch (e) {
+                    console.warn("Local china.json failed, trying Aliyun CDN...");
+                    const resCDN = await fetch('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json');
+                    if (!resCDN.ok) throw new Error("Map load failed");
+                    return await resCDN.json();
+                }
+            };
+
+            fetchMap().then(data => {
+                geoJsonData = data;
+
+                // FIX COORDINATES
+                // Gansu
+                const gansu = data.features.find(f => f.properties.name && f.properties.name.includes('甘肃'));
+                if (gansu) gansu.properties.cp = [103.90, 35.60];
+                // Hebei
+                const hebei = data.features.find(f => f.properties.name && f.properties.name.includes('河北'));
+                if (hebei) hebei.properties.cp = [115.2, 38.0];
+
+                echarts.registerMap('china', data);
+                chartInstance.hideLoading();
+
+                // Store centers for zoom
+                data.features.forEach(f => {
+                    const name = f.properties.name;
+                    if (name) {
+                        geoCenters[name] = f.properties.cp || f.properties.center || f.properties.centroid;
+                    }
+                });
+
+                setMapOption(null); // Initial view
+
+                // Event Listener
+                chartInstance.on('click', params => {
+                    const name = params.name;
+                    const info = PROVINCE_DATA[name];
+                    if (info) {
+                        focusProvince(info);
+                    }
+                });
+            }).catch(err => {
+                chartInstance.hideLoading();
+                chartDom.innerHTML = `<div class="flex h-full items-center justify-center text-red-800">
+                    <div class="text-center">
+                        <p class="text-xl font-bold mb-2">地图加载失败</p>
+                        <p class="text-sm">请确保 china.json 在根目录下，并使用本地服务器运行。</p>
+                    </div>
+                </div>`;
+            });
+
+            window.addEventListener('resize', () => chartInstance.resize());
+        }
+
+        function setMapOption(targetProvince) {
+            const isZoomed = !!targetProvince;
+            const center = isZoomed ? geoCenters[targetProvince.name] : [104.195, 35.861];
+            const zoom = isZoomed ? 4 : 1.05; // Adjusted Zoom Level
+
+            const option = {
+                backgroundColor: 'transparent',
+                animationDurationUpdate: 1500,
+                animationEasingUpdate: 'quinticInOut',
+                geo: {
+                    map: 'china',
+                    roam: false,
+                    center: center,
+                    zoom: zoom,
+                    top: isZoomed ? null : '15%', // Adjusted Top
+                    bottom: isZoomed ? null : '5%',
+                    layoutCenter: isZoomed ? null : ['50%', '55%'],
+                    layoutSize: isZoomed ? null : '100%',
+                    label: {
+                        show: true,
+                        color: '#fff',
+                        formatter: (params) => {
+                            // Only show labels for selected or all if none selected (but simple logic here)
+                            if (isZoomed && params.name !== targetProvince.name) return '';
+                            const p = PROVINCE_DATA[params.name];
+                            return p ? p.abbr : params.name;
+                        },
+                        fontFamily: 'Noto Serif SC',
+                        fontSize: isZoomed ? 18 : 12,
+                        fontWeight: 'bold',
+                        textShadowColor: 'rgba(0,0,0,0.5)',
+                        textShadowBlur: 2
+                    },
+                    itemStyle: {
+                        areaColor: {
+                            type: 'linear',
+                            x: 0, y: 0, x2: 0, y2: 1,
+                            colorStops: [
+                                { offset: 0, color: '#ef4444' },
+                                { offset: 1, color: '#7f1d1d' }
+                            ]
+                        },
+                        borderColor: '#F59E0B',
+                        borderWidth: 1,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)',
+                        shadowBlur: 10,
+                        shadowOffsetX: 5,
+                        shadowOffsetY: 5,
+                    },
+                    emphasis: {
+                        label: { show: true, color: '#fff' },
+                        itemStyle: {
+                            areaColor: '#fbbf24',
+                            borderColor: '#fff',
+                            borderWidth: 2,
+                            shadowBlur: 20,
+                            shadowColor: 'rgba(251, 191, 36, 0.8)',
+                        }
+                    }
+                },
+                series: [{
+                    type: 'map',
+                    map: 'china',
+                    geoIndex: 0,
+                    data: geoJsonData ? geoJsonData.features.map(f => {
+                        const isTarget = targetProvince && f.properties.name === targetProvince.name;
+                        return {
+                            name: f.properties.name,
+                            itemStyle: {
+                                areaColor: isTarget ? '#fbbf24' : (isZoomed ? '#7f1d1d' : undefined),
+                                opacity: (isZoomed && !isTarget) ? 0.3 : 1
+                            }
+                        };
+                    }) : []
+                }]
+            };
+            chartInstance.setOption(option);
+        }
+
+        /* ================= INTERACTION LOGIC ================= */
+        function focusProvince(data) {
+            selectedProvince = data;
+
+            // 1. Zoom Map
+            setMapOption(data);
+
+            // 2. Show Back Button & Hide Stamp
+            document.getElementById('back-btn').classList.remove('hidden');
+            document.getElementById('decor-stamp').classList.add('hidden');
+
+            // 3. Show Info Panel
+            showInfoPanel(data);
+        }
+
+        function resetView() {
+            selectedProvince = null;
+            setMapOption(null);
+
+            document.getElementById('back-btn').classList.add('hidden');
+            document.getElementById('decor-stamp').classList.remove('hidden');
+            document.getElementById('info-panel').classList.add('hidden');
+
+            // Stop typing
+            if (typingInterval) clearInterval(typingInterval);
+        }
+
+        // Back Button Handler
+        document.getElementById('back-btn').addEventListener('click', resetView);
+        document.getElementById('close-panel-btn').addEventListener('click', resetView);
+
+        /* ================= INFO PANEL LOGIC ================= */
+        function showInfoPanel(data) {
+            const panel = document.getElementById('info-panel');
+            const title = document.getElementById('panel-title');
+            const abbr = document.getElementById('panel-abbr');
+            const capital = document.getElementById('panel-capital');
+            const poem = document.getElementById('panel-poem');
+            const content = document.getElementById('panel-content');
+
+            title.innerText = data.name;
+            abbr.innerText = `简称: ${data.abbr}`;
+            capital.innerText = `省会: ${data.capital}`;
+            poem.innerText = data.poem ? `“${data.poem}”` : '';
+
+            content.innerHTML = ''; // Clear previous
+            panel.classList.remove('hidden');
+
+            // Typewriter Effect
+            let i = 0;
+            const text = data.description || "暂无详细介绍";
+            if (typingInterval) clearInterval(typingInterval);
+
+            typingInterval = setInterval(() => {
+                content.innerText += text.charAt(i);
+                i++;
+                if (i >= text.length) clearInterval(typingInterval);
+            }, 20);
+        }
+
+        /* ================= MOUSE TRAIL LOGIC ================= */
+        function initMouseTrail() {
+            const canvas = document.getElementById('trail-canvas');
+            const ctx = canvas.getContext('2d');
+            let width = window.innerWidth;
+            let height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+
+            const particles = [];
+            const mouse = { x: 0, y: 0 };
+
+            window.addEventListener('resize', () => {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                mouse.x = e.clientX;
+                mouse.y = e.clientY;
+                for (let i = 0; i < 3; i++) {
+                    particles.push(new Particle(mouse.x, mouse.y));
+                }
+            });
+
+            class Particle {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.size = Math.random() * 5 + 1;
+                    this.speedX = Math.random() * 3 - 1.5;
+                    this.speedY = Math.random() * 3 - 1.5;
+                    this.color = `hsla(${Math.random() * 20 + 40}, 100%, 50%, `; // Gold
+                    this.life = 1.0;
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    if (this.size > 0.2) this.size -= 0.1;
+                    this.life -= 0.02;
+                }
+                draw() {
+                    ctx.fillStyle = this.color + this.life + ')';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+                    if (particles[i].life <= 0 || particles[i].size <= 0.2) {
+                        particles.splice(i, 1);
+                        i--;
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+    </script>
+</body>
+
+</html>
