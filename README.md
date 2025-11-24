@@ -31,7 +31,7 @@
 
 ```text
 splendid-china/
-├── splendid-china.html    # 🚀 项目主入口 (包含核心逻辑与所有数据)
+├── index.html    # 🚀 项目主入口 (包含核心逻辑与所有数据)
 ├── china.json             # 🌏 地图数据源 (GeoJSON)
 └── README.md              # 📘 项目说明文档
 ```
